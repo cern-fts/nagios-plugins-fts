@@ -5,7 +5,7 @@
 %define nagios_plugins_dir %{_libdir}/nagios/plugins
 
 Name:       nagios-plugins-fts
-Version:    3.2.30
+Version:    3.5.0
 Release:    1%{?dist}
 Summary:    Nagios probes to be run remotely against FTS3 machines
 License:    ASL 2.0
