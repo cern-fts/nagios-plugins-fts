@@ -87,7 +87,7 @@ class FtsStalledTransfersProbe:
             oldest_time = datetime.utcnow()
             oldest = None
             for t in response['items']:
-                reference_struct = time.strptime(t['submit_time'], '%Y-%m-%dT%H:%M:%S')
+                reference_struct = time.strptime(t['submit_time'], '%Y-%m-%dT%H:%M:%SZ')
                 reference = datetime.fromtimestamp(time.mktime(reference_struct))
                 if reference < oldest_time:
                     oldest = t
