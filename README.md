@@ -14,7 +14,7 @@ and performance of FTS servers.
 Example of host and service definitions are  provided under the 'config' folder. 
 
 In particular the check_fts_service and check_fts_stalled_server probes need to run for each nodes part of the FTS cluster,
-while the check_fts_stalled_transfers is supposed to run once for the whole cluster( e.g. contacting the FTS alias).
+while the check_fts_stalled_transfers probe is supposed to run once for the whole cluster (e.g. contacting the FTS alias).
 
 # Contact
 
