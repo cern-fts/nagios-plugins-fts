@@ -11,7 +11,10 @@ and performance of FTS servers.
 * check_fts_stalled_server: to check if the FTS server is stalled and it's not properly processing transfers
 * check_fts_stalled_transfers: to check if there are stuck transfers 
 
-Example of host and service definitions are also provided under the 'config' folder
+Example of host and service definitions are  provided under the 'config' folder. 
+
+In particular the check_fts_service and check_fts_stalled_server probes need to run for each nodes part of the FTS cluster,
+while the check_fts_stalled_transfers is supposed to run once for the whole cluster( e.g. contacting the FTS alias).
 
 # Contact
 
