@@ -9,7 +9,7 @@ and performance of FTS servers.
 
 * check_fts_service: to check if the FTS REST Service is up and running
 * check_fts_stalled_server: to check if the FTS server is stalled and it's not properly processing transfers
-* check_fts_stalled_transfers: to check if there are stuck transfers 
+* check_fts_stalled_transfers: to check if there are stuck transfers in the cluster
 
 Example of host and service definitions are  provided under the 'config' folder. 
 
