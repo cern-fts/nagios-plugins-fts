@@ -3,6 +3,19 @@
 nagios-plugins-fts provides a set of nagios plugins to monitor both status
 and performance of FTS servers.
 
+## Probes details
+
+3 Nagios probes have been implemented
+
+* check_fts_service: to check if the FTS REST Service is up and running
+* check_fts_stalled_server: to check if the FTS server is stalled and it's not properly processing transfers
+* check_fts_stalled_transfers: to check if there are stuck transfers in the cluster
+
+Example of host and service definitions are  provided under the 'config' folder. 
+
+In particular the check_fts_service and check_fts_stalled_server probes need to run for each nodes part of the FTS cluster,
+while the check_fts_stalled_transfers probe is supposed to run once for the whole cluster (e.g. contacting the FTS alias).
+
 # Contact
 
 Send and email to fts-support@cern.ch if you have questions
