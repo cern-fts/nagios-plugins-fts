@@ -5,7 +5,7 @@
 %define nagios_plugins_dir %{_libdir}/nagios/plugins
 
 Name:       nagios-plugins-fts
-Version:    3.2.30
+Version:    3.5.0
 Release:    1%{?dist}
 Summary:    Nagios probes to be run remotely against FTS3 machines
 License:    ASL 2.0
@@ -19,11 +19,7 @@ Source0:   https://grid-deployment.web.cern.ch/grid-deployment/dms/fts3/tar/%{na
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 
-%if %{?fedora}%{!?fedora:0} >= 18 || %{?rhel}%{!?rhel:0} >= 7
 BuildRequires:  cmake
-%else
-BuildRequires:  cmake28
-%endif
 
 Requires:   nagios%{?_isa}
 Requires:   python%{?_isa}
@@ -42,11 +38,7 @@ FTS3 machines.
 %setup -q -n %{name}-%{version}
 
 %build
-%if %{?fedora}%{!?fedora:0} >= 18 || %{?rhel}%{!?rhel:0} >= 7
 %cmake . -DCMAKE_INSTALL_PREFIX=/
-%else
-%cmake28 . -DCMAKE_INSTALL_PREFIX=/
-%endif
 
 make %{?_smp_mflags}
 
@@ -63,7 +55,7 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 %config(noreplace) %{_sysconfdir}/nagios/objects/fts3-template.cfg
 %{nagios_plugins_dir}/fts
-%doc LICENSE README
+%doc LICENSE README.md
 
 %changelog
 * Tue Nov 12 2013 Alejandro Alvarez Ayllon <aalvarez@cern.ch> - 3.2.0-1

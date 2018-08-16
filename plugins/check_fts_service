@@ -1,36 +1,18 @@
 #!/usr/bin/env python
-import getopt
+import json
+import optparse
 import os
 import pycurl
 import sys
 
 from StringIO import StringIO
-from xml.dom import minidom
 
 # Exit codes (NAGIOS compliant)
-EX_OK       = 0
-EX_WARNING  = 1
+EX_OK = 0
+EX_WARNING = 1
 EX_CRITICAL = 2
-EX_UNKNOWN  = 3
+EX_UNKNOWN = 3
 
-# Message
-# Hardcoded to avoid dependencies
-SOAP_VERSION_REQUEST = """
-<?xml version="1.0" encoding="UTF-8"?>
-<SOAP-ENV:Envelope
-    xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"
-    xmlns:ns0="http://schemas.xmlsoap.org/soap/encoding/"
-    xmlns:ns1="http://schemas.xmlsoap.org/soap/envelope/"
-    xmlns:ns2="http://glite.org/wsdl/services/org.glite.data.transfer.fts"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
-    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-   <SOAP-ENV:Header/>
-   <ns1:Body>
-      <ns2:getInterfaceVersion/>
-   </ns1:Body>
-</SOAP-ENV:Envelope>
-"""
 
 class FtsProbe:
     """
@@ -39,94 +21,51 @@ class FtsProbe:
     """
 
     def __init__(self, argv):
-        self.description = ' '.join(self.__doc__.split())
-        self.scriptName  = os.path.basename(argv[0])
+        parser = optparse.OptionParser(
+            prog=os.path.basename(argv[0]),
+            description=' '.join(self.__doc__.split())
+        )
 
-        # Defaults
-        self.abortMsg = None
-        self.help     = False
-        self.host     = None
-        self.port     = 8443
-        self.cert     = None
-        self.key      = None
+        parser.add_option('-H', '--host', type='str', default=None, help='FTS Host')
+        parser.add_option('-p', '--port', type=int, default=8446, help='FTS REST Port')
+        parser.add_option('--cert', type=str, default=None, help='User certificate')
+        parser.add_option('--key', type=str, default=None, help='User private key')
 
-        # Process args
-        try:
-            opts, args = getopt.getopt(argv[1:], 'hH:p:', ['help', 'host=', 'port=', 'cert=', 'key='])
-            for opt, arg in opts:
-                if opt in ('-h', '--help'):
-                    self.help = True
-                elif opt in ('-H', '--host'):
-                    self.host = arg
-                elif opt in ('-p', '--port'):
-                    self.port = int(arg)
-                elif opt == '--cert':
-                    self.cert = arg
-                elif opt == '--key':
-                    self.key = arg
-        except Exception, e:
-            self.abortMsg = str(e)
+        self.options, args = parser.parse_args(args=argv)
 
-        if not self.abortMsg and self.host is None:
-            self.abortMsg = "-H must be specified"
-
-    def usage(self):
-        return \
-"""%s
-
-Usage:
-    %s -H <host> [-p <port>] [--cert <user-cert>] [--key <user-key>]
-
-Options:
-    -H, --host Specifies the host to check
-    -p, --port Specifies the FTS port. Default: 8443
-        --cert X509 certificate to use
-""" % (self.description, self.scriptName)
-
+        if self.options.host is None:
+            parser.error("-H must be specified")
 
     def __call__(self):
-        if self.help:
-            return (EX_OK, self.usage())
-        elif self.abortMsg:
-            return (EX_CRITICAL, self.abortMsg)
-
         curl = pycurl.Curl()
-        curl.setopt(pycurl.URL, "https://%s:%s" % (self.host, self.port))
+        curl.setopt(pycurl.URL, "https://%s:%d" % (self.options.host, self.options.port))
         curl.setopt(pycurl.CAPATH, '/etc/grid-security/certificates')
-        if self.cert:
-            curl.setopt(pycurl.CAINFO, self.cert)
-            curl.setopt(pycurl.SSLCERT, self.cert)
-        if self.key:
-            curl.setopt(pycurl.SSLKEY, self.key)
-
-        curl.setopt(pycurl.POST, True)
-        curl.setopt(pycurl.HTTPHEADER, ['Content-Type: text/xml'])
-        curl.setopt(pycurl.POSTFIELDS, SOAP_VERSION_REQUEST)
+        if self.options.cert:
+            curl.setopt(pycurl.CAINFO, self.options.cert)
+            curl.setopt(pycurl.SSLCERT, self.options.cert)
+        if self.options.key:
+            curl.setopt(pycurl.SSLKEY, self.options.key)
 
         buffer = StringIO()
         curl.setopt(pycurl.WRITEFUNCTION, buffer.write)
 
         try:
             curl.perform()
+        except pycurl.error, e:
+            return EX_CRITICAL, e[1]
         except Exception, e:
-            return (EX_CRITICAL, str(e))
-       
-        if curl.getinfo(pycurl.RESPONSE_CODE) != 200:
-            return (EX_CRITICAL, "Got %d" % curl.getinfo(pycurl.RESPONSE_CODE))
- 
-        try:
-            doc = minidom.parseString(buffer.getvalue())
-            response = doc.getElementsByTagName('getInterfaceVersionReturn')[0]
-            version = None
-            for child in response.childNodes:
-                if child.nodeType == child.TEXT_NODE:
-                    version = child.data
-            if version is None:
-                raise Exception('Could not find the version')
-        except Exception, e:
-            return (EX_CRITICAL, "Response is malformed (%s)" % str(e))
+            return EX_CRITICAL, str(e)
 
-        return (EX_OK, "FTS %s" % version)
+        if curl.getinfo(pycurl.RESPONSE_CODE) != 200:
+            return EX_CRITICAL, "Got %d" % curl.getinfo(pycurl.RESPONSE_CODE)
+
+        try:
+            resp = json.loads(buffer.getvalue())
+            version = '.'.join(map(str, resp["api"].values()))
+        except Exception, e:
+            return EX_CRITICAL, "Response is malformed (%s)" % str(e)
+
+        return EX_OK, "FTS %s" % version
 
 
 if __name__ == '__main__':
@@ -143,4 +82,3 @@ if __name__ == '__main__':
         print "UNKNOWN -", msg
 
     sys.exit(status)
-
