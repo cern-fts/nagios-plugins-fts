@@ -6,7 +6,7 @@
 
 Name:       nagios-plugins-fts
 Version:    3.5.0
-Release:    1%{?dist}
+Release:    2%{?dist}
 Summary:    Nagios probes to be run remotely against FTS3 machines
 License:    ASL 2.0
 Group:      Applications/Internet
