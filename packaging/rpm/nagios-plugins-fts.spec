@@ -13,8 +13,6 @@ Group:      Applications/Internet
 URL:        https://svnweb.cern.ch/trac/fts3
 # The source of this package was pulled from upstream's vcs. Use the
 # following commands to generate the tarball:
-# svn export http://svn.cern.ch/guest/fts3/trunk/nagios/ nagios-plugins-fts-3.2.0
-# tar -czvf nagios-plugins-fts-3.2.0.tar.gz nagios
 Source0:   https://grid-deployment.web.cern.ch/grid-deployment/dms/fts3/tar/%{name}-%{version}.tar.gz
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
@@ -24,10 +22,6 @@ BuildRequires:  cmake
 Requires:   nagios%{?_isa}
 Requires:   python%{?_isa}
 Requires:   python-pycurl%{?_isa}
-
-%if %{?rhel}%{!?rhel:0} <= 5
-Requires:   python-simplejson%{?_isa}
-%endif
 
 %description
 This package provides the nagios probes for FTS3. Usually they are installed
@@ -58,6 +52,9 @@ rm -rf %{buildroot}
 %doc LICENSE README.md
 
 %changelog
+* Thu Aug 16 2018 Andrea Manzi <amanzi@cern.ch> - 3.5.0-2
+- fixes for new nagios systax and use of REST instead of SOAP interface
+
 * Tue Nov 12 2013 Alejandro Alvarez Ayllon <aalvarez@cern.ch> - 3.2.0-1
 - Initial build
 
