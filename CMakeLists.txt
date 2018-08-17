@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-project(nagios-plugins-fts)
+project(nagios-plugins-fts NONE)
 
 # architecture detection
 if(UNIX AND NOT WIN32)
