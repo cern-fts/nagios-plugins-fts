@@ -5,8 +5,8 @@
 %define nagios_plugins_dir %{_libdir}/nagios/plugins
 
 Name:       nagios-plugins-fts
-Version:    3.5.0
-Release:    2%{?dist}
+Version:    3.6.0
+Release:    1%{?dist}
 Summary:    Nagios probes to be run remotely against FTS3 machines
 License:    ASL 2.0
 Group:      Applications/Internet
@@ -20,8 +20,8 @@ BuildArch: noarch
 BuildRequires:  cmake
 
 Requires:   nagios%{?_isa}
-Requires:   python%{?_isa}
-Requires:   python-pycurl%{?_isa}
+Requires:   python3%{?_isa}
+Requires:   python3-pycurl%{?_isa}
 
 %description
 This package provides the nagios probes for FTS3. Usually they are installed
@@ -52,6 +52,9 @@ rm -rf %{buildroot}
 %doc LICENSE README.md
 
 %changelog
+* Thu Aug 15 2019 Andrea Manzi <amanzi@cern.ch> - 3.6.0-1
+- python3 compatible version
+
 * Thu Aug 16 2018 Andrea Manzi <amanzi@cern.ch> - 3.5.0-2
 - fixes for new nagios systax and use of REST instead of SOAP interface
 

@@ -7,7 +7,8 @@ import optparse
 import os
 import pycurl
 import sys
-from StringIO import StringIO
+from io import StringIO
+from functools import reduce
 
 # Exit codes (NAGIOS compliant)
 EX_OK = 0
@@ -64,9 +65,9 @@ class FtsStalledServerProbe:
 
         try:
             curl.perform()
-        except pycurl.error, e:
+        except pycurl.error as e:
             return EX_CRITICAL, e[1]
-        except Exception, e:
+        except Exception as e:
             return EX_CRITICAL, str(e)
 
         if curl.getinfo(pycurl.RESPONSE_CODE) != 200:
@@ -74,14 +75,14 @@ class FtsStalledServerProbe:
 
         try:
             response = json.loads(buffer.getvalue())
-        except Exception, e:
+        except Exception as e:
             return EX_CRITICAL, 'Could not retrieve the status from the monitoring (%s)' % str(e)
 
         if self.options.host not in response:
             return EX_CRITICAL, 'The host is not visible in the monitoring. Maybe it is down?'
 
-        n_hosts = len(response.keys())
-        total_active = reduce(lambda a, b: a + b, map(lambda h: h.get('active', 0), response.values()))
+        n_hosts = len(list(response.keys()))
+        total_active = reduce(lambda a, b: a + b, [h.get('active', 0) for h in list(response.values())])
         this_host_active = response[self.options.host].get('active', 0)
 
         msg = "Running %d out of %d" % (this_host_active, total_active)
@@ -98,12 +99,12 @@ if __name__ == '__main__':
     (status, msg) = probe()
 
     if status == EX_OK:
-        print "OK -", msg
+        print(("OK -", msg))
     elif status == EX_WARNING:
-        print "WARNING -", msg
+        print(("WARNING -", msg))
     elif status == EX_CRITICAL:
-        print "CRITICAL -", msg
+        print(("CRITICAL -", msg))
     else:
-        print "UNKNOWN -", msg
+        print(("UNKNOWN -", msg))
 
     sys.exit(status)

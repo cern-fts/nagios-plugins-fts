@@ -5,7 +5,7 @@ import os
 import pycurl
 import sys
 
-from StringIO import StringIO
+from io import StringIO
 
 # Exit codes (NAGIOS compliant)
 EX_OK = 0
@@ -51,9 +51,9 @@ class FtsProbe:
 
         try:
             curl.perform()
-        except pycurl.error, e:
+        except pycurl.error as e:
             return EX_CRITICAL, e[1]
-        except Exception, e:
+        except Exception as e:
             return EX_CRITICAL, str(e)
 
         if curl.getinfo(pycurl.RESPONSE_CODE) != 200:
@@ -61,8 +61,8 @@ class FtsProbe:
 
         try:
             resp = json.loads(buffer.getvalue())
-            version = '.'.join(map(str, resp["api"].values()))
-        except Exception, e:
+            version = '.'.join(map(str, list(resp["api"].values())))
+        except Exception as e:
             return EX_CRITICAL, "Response is malformed (%s)" % str(e)
 
         return EX_OK, "FTS %s" % version
@@ -73,12 +73,12 @@ if __name__ == '__main__':
     (status, msg) = probe()
 
     if status == EX_OK:
-        print "OK -", msg
+        print(("OK -", msg))
     elif status == EX_WARNING:
-        print "WARNING -", msg
+        print(("WARNING -", msg))
     elif status == EX_CRITICAL:
-        print "CRITICAL -", msg
+        print(("CRITICAL -", msg))
     else:
-        print "UNKNOWN -", msg
+        print(("UNKNOWN -", msg))
 
     sys.exit(status)

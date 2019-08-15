@@ -8,7 +8,7 @@ import os
 import pycurl
 import sys
 import time
-from StringIO import StringIO
+from io import StringIO
 from datetime import datetime, timedelta
 
 # Exit codes (NAGIOS compliant)
@@ -64,9 +64,9 @@ class FtsStalledTransfersProbe:
 
         try:
             curl.perform()
-        except pycurl.error, e:
+        except pycurl.error as e:
             return EX_CRITICAL, e[2]
-        except Exception, e:
+        except Exception as e:
             return EX_CRITICAL, str(e)
 
         if curl.getinfo(pycurl.RESPONSE_CODE) != 200:
@@ -74,7 +74,7 @@ class FtsStalledTransfersProbe:
 
         try:
             response = json.loads(buffer.getvalue())
-        except Exception, e:
+        except Exception as e:
             return EX_CRITICAL, 'Could not retrieve the status from the monitoring (%s)' % str(e)
 
         try:
@@ -92,7 +92,7 @@ class FtsStalledTransfersProbe:
                 if reference < oldest_time:
                     oldest = t
                     oldest_time = reference
-        except Exception, e:
+        except Exception as e:
             return EX_CRITICAL, 'Could not process the response from the server: %s' % str(e)
 
         # Check elapsed to the oldest
@@ -111,12 +111,12 @@ if __name__ == '__main__':
     (status, msg) = probe()
 
     if status == EX_OK:
-        print "OK -", msg
+        print(("OK -", msg))
     elif status == EX_WARNING:
-        print "WARNING -", msg
+        print(("WARNING -", msg))
     elif status == EX_CRITICAL:
-        print "CRITICAL -", msg
+        print(("CRITICAL -", msg))
     else:
-        print "UNKNOWN -", msg
+        print(("UNKNOWN -", msg))
 
     sys.exit(status)
